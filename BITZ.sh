@@ -78,6 +78,13 @@ function export_wallet() {
   read -n 1 -s -r -p "操作完成，按任意键返回菜单..."
 }
 
+function view_mining_screen() {
+  echo -e "${YELLOW}正在尝试进入挖矿 screen 界面...${NC}"
+  echo -e "${YELLOW}退出 screen 请按 Ctrl+A 然后 D${NC}"
+  sleep 1
+  screen -r eclipse
+}
+
 function show_menu() {
   clear
   show_logo
@@ -87,6 +94,7 @@ function show_menu() {
   echo "3. 查看余额"
   echo "4. 导入 Backpack 钱包"
   echo "5. 导出钱包（私钥）"
+  echo "6. 查看挖矿界面（进入 screen）"
   echo "0. 退出"
   echo
   read -p "请输入数字选项: " choice
@@ -97,6 +105,7 @@ function show_menu() {
     3) check_balance ;;
     4) import_backpack ;;
     5) export_wallet ;;
+    6) view_mining_screen ;;
     0) echo -e "${RED}退出脚本...${NC}" && exit 0 ;;
     *) echo -e "${RED}无效选项，请重新输入。${NC}" && sleep 1 ;;
   esac
