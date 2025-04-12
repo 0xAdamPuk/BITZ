@@ -11,6 +11,7 @@ NC="\e[0m"
 
 KEYPAIR_PATH="$HOME/eclipse-keypair.json"
 SCREEN_NAME="eclipse_mining"  # 用于 挖矿界面 和 守护挖矿
+THREADS=0  # 用来保存线程数
 
 function show_logo() {
   echo -e "${BLUE}"
@@ -71,10 +72,13 @@ function uninstall_all() {
 }
 
 function start_mining() {
-  echo -e "${GREEN}开始启动挖矿...${NC}"
-  screen -S $SCREEN_NAME -dm bash -c "bitz collect"
+  echo -e "${YELLOW}请输入你想要使用的 CPU 线程数（建议不超过 $(nproc)）：${NC}"
+  read -p "线程数: " user_threads
+  THREADS=$user_threads  # 保存用户输入的线程数到全局变量 THREADS
+  echo -e "${GREEN}开始使用 $THREADS 线程启动挖矿...${NC}"
+  screen -S $SCREEN_NAME -dm bash -c "bitz collect --threads $THREADS"
   echo -e "${GREEN}eMining 已在后台运行。${NC}"
-  echo -e "${YELLOW}请确保钱包有至少 0.005 $ETH：${NC}"
+  echo -e "${YELLOW}请确保钱包有至少 0.005 \$ETH：${NC}"
   solana address
   read -n 1 -s -r -p "操作完成，按任意键返回菜单..."
 }
@@ -113,23 +117,20 @@ function view_mining_screen() {
 }
 
 function daemon_mining() {
-  echo -e "${GREEN}守护挖矿进程启动中...${NC}"
+  echo -e "${GREEN}守护挖矿进程启动中（使用 $THREADS 线程）...${NC}"
   while true; do
-    # 检查 screen 会话是否存在
     if ! screen -list | grep -q "$SCREEN_NAME"; then
       echo "$(date) 未检测到 screen 会话，创建并启动 bitz collect..."
-      screen -dmS $SCREEN_NAME bash -c 'bitz collect'
+      screen -dmS $SCREEN_NAME bash -c "bitz collect --threads $THREADS"
     else
-      # 检查 bitz collect 是否在运行
       if ! pgrep -f "bitz collect" > /dev/null; then
         echo "$(date) bitz collect 进程不存在，重启中..."
-        screen -S $SCREEN_NAME -X stuff $'bitz collect\n'
+        screen -S $SCREEN_NAME -X stuff $"bitz collect --threads $THREADS\n"
       else
         echo "$(date) bitz collect 正在运行中，无需处理。"
       fi
     fi
-    sleep 300  # 等待5分钟
-    # 提示用户按任意键返回菜单
+    sleep 300
     echo -e "${YELLOW}按任意键返回菜单...${NC}"
     read -n 1 -s -r
     show_menu
