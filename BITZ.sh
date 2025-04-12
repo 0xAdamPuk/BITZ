@@ -1,10 +1,5 @@
 #!/bin/bash
 
-# 安装 screen（如果未安装的话）
-echo "开始安装 screen..."
-sudo apt update && sudo apt install -y screen
-echo "screen 安装完成。"
-
 # 作者：K2 节点教程分享 推特 https://x.com/BtcK241918
 # $BITZ ePOW (Eclipse $BITZ) 一键挖矿脚本（菜单版）
 
@@ -49,6 +44,28 @@ function install_all() {
   solana config set --keypair $KEYPAIR_PATH
 
   echo -e "${GREEN}安装完成！${NC}"
+  read -n 1 -s -r -p "操作完成，按任意键返回菜单..."
+}
+
+function uninstall_all() {
+  echo -e "${RED}开始卸载相关软件...${NC}"
+
+  echo -e "${RED}卸载 screen...${NC}"
+  sudo apt remove --purge -y screen
+
+  echo -e "${RED}卸载 Rust...${NC}"
+  rustup self uninstall -y
+
+  echo -e "${RED}卸载 Solana CLI...${NC}"
+  rm -rf $HOME/.local/share/solana
+
+  echo -e "${RED}卸载 Bitz CLI...${NC}"
+  cargo uninstall bitz
+
+  echo -e "${RED}删除钱包文件...${NC}"
+  rm -f $KEYPAIR_PATH
+
+  echo -e "${RED}所有相关软件已卸载，钱包已删除。${NC}"
   read -n 1 -s -r -p "操作完成，按任意键返回菜单..."
 }
 
@@ -104,6 +121,7 @@ function show_menu() {
   echo "4. 导入 Backpack 钱包"
   echo "5. 导出钱包（私钥）"
   echo "6. 查看挖矿界面（进入 screen）"
+  echo "7. 卸载所有软件"
   echo "0. 退出"
   echo
   read -p "请输入数字选项: " choice
@@ -115,6 +133,7 @@ function show_menu() {
     4) import_backpack ;;
     5) export_wallet ;;
     6) view_mining_screen ;;
+    7) uninstall_all ;;
     0) echo -e "${RED}退出脚本...${NC}" && exit 0 ;;
     *) echo -e "${RED}无效选项，请重新输入。${NC}" && sleep 1 ;;
   esac
