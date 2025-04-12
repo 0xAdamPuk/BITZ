@@ -129,6 +129,10 @@ function daemon_mining() {
       fi
     fi
     sleep 300  # 等待5分钟
+    # 提示用户按任意键返回菜单
+    echo -e "${YELLOW}按任意键返回菜单...${NC}"
+    read -n 1 -s -r
+    show_menu
   done
 }
 
