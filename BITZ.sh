@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# 安装 screen（如果未安装的话）
+echo "开始安装 screen..."
+sudo apt update && sudo apt install -y screen
+echo "screen 安装完成。"
+
 # 作者：K2 节点教程分享 推特 https://x.com/BtcK241918
 # $BITZ ePOW (Eclipse $BITZ) 一键挖矿脚本（菜单版）
 
@@ -21,6 +26,10 @@ function show_logo() {
 }
 
 function install_all() {
+  echo -e "${GREEN}开始安装 screen...${NC}"
+  sudo apt update && sudo apt install -y screen
+  echo -e "${GREEN}screen 安装完成。${NC}"
+
   echo -e "${GREEN}开始安装 Rust...${NC}"
   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
   source $HOME/.cargo/env
