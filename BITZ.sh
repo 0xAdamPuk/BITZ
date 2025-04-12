@@ -10,6 +10,7 @@ RED="\e[1;31m"
 NC="\e[0m"
 
 KEYPAIR_PATH="$HOME/eclipse-keypair.json"
+SCREEN_NAME="eclipse_mining"  # 用于 挖矿界面 和 守护挖矿
 
 function show_logo() {
   echo -e "${BLUE}"
@@ -71,7 +72,7 @@ function uninstall_all() {
 
 function start_mining() {
   echo -e "${GREEN}开始启动挖矿...${NC}"
-  screen -S eclipse -dm bash -c "bitz collect"
+  screen -S $SCREEN_NAME -dm bash -c "bitz collect"
   echo -e "${GREEN}eMining 已在后台运行。${NC}"
   echo -e "${YELLOW}请确保钱包有至少 0.005 $ETH：${NC}"
   solana address
@@ -108,7 +109,27 @@ function view_mining_screen() {
   echo -e "${YELLOW}正在尝试进入挖矿 screen 界面...${NC}"
   echo -e "${YELLOW}退出 screen 请按 Ctrl+A 然后 D${NC}"
   sleep 1
-  screen -r eclipse
+  screen -r $SCREEN_NAME
+}
+
+function daemon_mining() {
+  echo -e "${GREEN}守护挖矿进程启动中...${NC}"
+  while true; do
+    # 检查 screen 会话是否存在
+    if ! screen -list | grep -q "$SCREEN_NAME"; then
+      echo "$(date) 未检测到 screen 会话，创建并启动 bitz collect..."
+      screen -dmS $SCREEN_NAME bash -c 'bitz collect'
+    else
+      # 检查 bitz collect 是否在运行
+      if ! pgrep -f "bitz collect" > /dev/null; then
+        echo "$(date) bitz collect 进程不存在，重启中..."
+        screen -S $SCREEN_NAME -X stuff $'bitz collect\n'
+      else
+        echo "$(date) bitz collect 正在运行中，无需处理。"
+      fi
+    fi
+    sleep 300  # 等待5分钟
+  done
 }
 
 function show_menu() {
@@ -121,7 +142,8 @@ function show_menu() {
   echo "4. 导入 Backpack 钱包"
   echo "5. 导出钱包（私钥）"
   echo "6. 查看挖矿界面（进入 screen）"
-  echo "7. 卸载所有软件"
+  echo "7. 守护挖矿"
+  echo "8. 卸载所有软件"
   echo "0. 退出"
   echo
   read -p "请输入数字选项: " choice
@@ -133,12 +155,12 @@ function show_menu() {
     4) import_backpack ;;
     5) export_wallet ;;
     6) view_mining_screen ;;
-    7) uninstall_all ;;
+    7) daemon_mining & ;;  # 以后台进程启动守护挖矿
+    8) uninstall_all ;;
     0) echo -e "${RED}退出脚本...${NC}" && exit 0 ;;
     *) echo -e "${RED}无效选项，请重新输入。${NC}" && sleep 1 ;;
   esac
 }
 
-while true; do
-  show_menu
-done
+# 主程序循环
+show_menu
